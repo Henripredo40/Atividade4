@@ -1,109 +1,124 @@
-class Pessoa {
-    private String nome;
-    private String endereco;
-    private String telefone;
+import java.util.Scanner;
 
-    public Pessoa(String nome, String endereco, String telefone) {
-        this.nome = nome;
-        this.endereco = endereco;
-        this.telefone = telefone;
+abstract class Conta {
+    private String titular;
+    protected double saldo;
+
+    public Conta(String titular) {
+        this.titular = titular;
+        this.saldo = 0.0;
     }
 
-    public String getNome() {
-        return nome;
+    public double getSaldo() {
+        return saldo;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    protected void setSaldo(double saldo) {
+        this.saldo = saldo;
     }
 
-    public String getEndereco() {
-        return endereco;
+    public abstract void depositar(double valor);
+
+    public abstract void sacar(double valor);
+}
+
+class ContaCorrente extends Conta {
+    public ContaCorrente(String titular) {
+        super(titular);
     }
 
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
+    public void depositar(double valor) {
+        super.setSaldo(getSaldo() + valor);
+        System.out.println("Depósito de R$ " + valor + " na conta corrente realizado com sucesso.");
     }
 
-    public String getTelefone() {
-        return telefone;
-    }
-
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
+    public void sacar(double valor) {
+        if (getSaldo() >= valor) {
+            super.setSaldo(getSaldo() - valor);
+            System.out.println("Saque de R$ " + valor + " na conta corrente realizado com sucesso.");
+        } else {
+            System.out.println("Saldo insuficiente para saque na conta corrente.");
+        }
     }
 }
 
-class Membro extends Pessoa {
-    private int numeroMembro;
-
-    public Membro(String nome, String endereco, String telefone, int numeroMembro) {
-        super(nome, endereco, telefone);
-        this.numeroMembro = numeroMembro;
+class ContaPoupanca extends Conta {
+    public ContaPoupanca(String titular) {
+        super(titular);
     }
 
-    public int getNumeroMembro() {
-        return numeroMembro;
+    public void depositar(double valor) {
+        super.setSaldo(getSaldo() + valor - 0.02 * valor);
+        System.out
+                .println("Depósito de R$ " + valor + " na conta poupança realizado com sucesso. Bonificação aplicada.");
     }
 
-    public void emprestarLivro(Livro livro) {
-        livro.setEmprestado(true);
-    }
-}
-
-class Funcionario extends Pessoa {
-    private String idFuncionario;
-
-    public Funcionario(String nome, String endereco, String telefone, String idFuncionario) {
-        super(nome, endereco, telefone);
-        this.idFuncionario = idFuncionario;
-    }
-
-    public String getIdFuncionario() {
-        return idFuncionario;
-    }
-
-    public void registrarLivro(Livro livro) {
-        System.out.println("Livro '" + livro.getTitulo() + "' registrado com sucesso.");
+    
+    public void sacar(double valor) {
+        if (getSaldo() >= valor) {
+            super.setSaldo(getSaldo() - valor);
+            System.out.println("Saque de R$ " + valor + " na conta poupança realizado com sucesso.");
+        } else {
+            System.out.println("Saldo insuficiente para saque na conta poupança.");
+        }
     }
 }
 
-class Livro {
-    private String titulo;
-    private String autor;
-    private boolean emprestado;
-
-    public Livro(String titulo, String autor) {
-        this.titulo = titulo;
-        this.autor = autor;
-        this.emprestado = false;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public String getAutor() {
-        return autor;
-    }
-
-    public boolean Emprestado() {
-        return emprestado;
-    }
-
-    public void setEmprestado(boolean emprestado) {
-        this.emprestado = emprestado;
-    }
-}
-
-public class BibliotecaDemo {
+public class GerenciaBanco {
     public static void main(String[] args) {
-        Membro membro = new Membro("John Doe", "123 Maple St", "555-0199", 1);
-        Funcionario funcionario = new Funcionario("Jane Smith", "123 Oak St", "555-0200", "F001");
-        Livro livro = new Livro("Hamlet", "William Shakespeare");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Bem-vindo ao sistema bancário!");
 
-        funcionario.registrarLivro(livro);
-        membro.emprestarLivro(livro);
-        System.out.println("O livro '" + livro.getTitulo() + "' está emprestado? " + livro.isEmprestado());
+        System.out.println("Digite o tipo de conta (1 para Corrente, 2 para Poupança):");
+        int tipo = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.println("Qual o seu nome:");
+        String nome = scanner.nextLine();
+
+        Conta conta = null;
+        if (tipo == 1) {
+            conta = new ContaCorrente(nome);
+        } else if (tipo == 2) {
+            conta = new ContaPoupanca(nome);
+        }
+
+        if (conta != null) {
+            int opcao;
+            do {
+                System.out.println("\n------ Menu ----");
+                System.out.println("1. Consultar Saldo");
+                System.out.println("2. Realizar Depósito");
+                System.out.println("3. Realizar Saque");
+                System.out.println("4. Encerrar");
+                System.out.println("Escolha uma opção:");
+                opcao = scanner.nextInt();
+
+                switch (opcao) {
+                    case 1:
+                        System.out.println("Saldo: R$ " + conta.getSaldo());
+                        break;
+                    case 2:
+                        System.out.println("Digite o valor do depósito:");
+                        double valorDeposito = scanner.nextDouble();
+                        conta.depositar(valorDeposito);
+                        break;
+                    case 3:
+                        System.out.println("Digite o valor do saque:");
+                        double valorSaque = scanner.nextDouble();
+                        conta.sacar(valorSaque);
+                        break;
+                    case 4:
+                        System.out.println("Encerrando...");
+                        break;
+                    default:
+                        System.out.println("Opção inválida.");
+                }
+            } while (opcao != 4);
+        } else {
+            System.out.println("Tipo de conta inválido!");
+        }
+        scanner.close();
+        System.out.println("Obrigado por usar nosso serviço bancário.");
     }
 }
